@@ -1,0 +1,126 @@
+# Generated Types
+
+type CallingPoint {
+  locationName: String
+  crs: String
+  st: String
+  et: String
+}
+
+type CallingPointList {
+  callingPoint: CallingPoint
+}
+
+type SubsequentCallingPoints {
+  callingPointList: CallingPointList
+}
+
+type PreviousCallingPoints {
+  callingPointList: CallingPointList
+}
+
+type Location {
+  locationName: String
+  crs: String
+}
+
+type Destination {
+  location: Location
+}
+
+type Origin {
+  location: Location
+}
+
+type Service {
+  sta: String #Scheduled Time of Arrival
+  eta: String #Estimated Time of Arrival
+  std: String
+  etd: String
+  platform: String
+  operator: String
+  operatorCode: String
+  serviceType: String
+  serviceID: String
+  rsid: String
+  subsequentCallingPoints: SubsequentCallingPoints
+  previousCallingPoints: PreviousCallingPoints
+  destination: Destination
+  origin: Origin
+}
+
+type TrainServices {
+  service: [Service!]
+}
+
+type GetStationBoardResult {
+  generatedAt: String
+  locationName: String
+  crs: String
+  platformAvailable: String
+  trainServices: TrainServices
+}
+
+type DepartureDestination {
+	service: Service
+}
+
+type Departures {
+  destination: DepartureDestination
+}
+
+type DeparturesBoard {
+  generatedAt: String
+  locationName: String
+  crs: String
+  platformAvailable: String
+  departures: Departures
+}
+
+type GetBoardResponse {
+  GetStationBoardResult: GetStationBoardResult
+}
+
+type GetDeparturesBoardResponse {
+  DeparturesBoard: DeparturesBoard
+}
+
+type GetServiceDetailsResponse {
+  GetServiceDetailsResult: Service
+}
+
+# Inputs
+
+input BoardInput {
+	numRows: Int
+	crs: String!
+	filterCrs: String
+	filterType: String
+	timeOffset: Int
+	timeWindow: Int
+}
+
+input DepartureInput {
+	crs: String!
+	filterList: [String!]
+	timeOffset: Int
+	timeWindow: Int
+}
+
+input ServiceInput {
+	serviceID: String!
+}
+
+type Query {
+	getDepBoardWithDetails(payload: BoardInput!): GetBoardResponse!
+	getDepartureBoard(payload: BoardInput!): GetBoardResponse!
+	getArrivalBoard(payload: BoardInput!): GetBoardResponse!
+	getArrBoardWithDetails(payload: BoardInput!): GetBoardResponse!
+	getArrivalDepartureBoard(payload: BoardInput!): GetBoardResponse!
+	getArrDepBoardWithDetails(payload: BoardInput!): GetBoardResponse!
+	getNextDepartures(payload: DepartureInput!): GetDeparturesBoardResponse!
+	getNextDeparturesWithDetails(payload: DepartureInput!): GetDeparturesBoardResponse!
+	getFastestDepartures(payload: DepartureInput!): GetDeparturesBoardResponse!
+	getFastestDeparturesWithDetails(payload: DepartureInput!): GetDeparturesBoardResponse!
+	getServiceDetails(payload: ServiceInput!): GetServiceDetailsResponse!
+}
