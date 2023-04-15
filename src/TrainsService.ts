@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { parseString, convertableToString, ParserOptions, Builder } from 'xml2js';
 import { promisify } from 'util';
-import { get } from 'lodash';
+import { get, isObjectLike } from 'lodash';
+
+type Obj = { [k: string]: any };
 
 type ParseString = (
   str: convertableToString,
@@ -9,9 +11,11 @@ type ParseString = (
   callback: (err: Error | null, result: any) => void
 ) => void;
 
+const toCamelCase = (str: string): string => str.charAt(0).toLocaleLowerCase() + str.slice(1);
+
 const xml2JSON = promisify(parseString as ParseString);
 
-const BASE_URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb9.asmx';
+const BASE_URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb11.asmx';
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
@@ -75,7 +79,7 @@ export class TrainsService {
 				</AccessToken>
 			</Header>
 			<Body>
-				<${operationName}Request xmlns="http://thalesgroup.com/RTTI/2016-02-16/ldb/">
+				<${operationName}Request xmlns="http://thalesgroup.com/RTTI/2017-10-01/ldb/">
 					${body}
 				</${operationName}Request>
 			</Body>
@@ -95,16 +99,38 @@ export class TrainsService {
 
     const data = await this.parseResponse(result.data, operationName);
 
-    console.log(data);
     return data;
   }
 
-  async parseResponse(result: string, operationName: Trains.Operation) {
+  async parseResponse(result: string, operationName: Trains.Operation): Promise<Obj> {
     return await xml2JSON(result, {
       trim: true,
       ignoreAttrs: true,
       explicitArray: false,
       tagNameProcessors: [(name) => (name.includes(':') ? name.split(':')[1] : name)],
-    }).then((data) => get(data, ['Envelope', 'Body', `${operationName}Response`]));
+    })
+      .then((data) => get(data, ['Envelope', 'Body', `${operationName}Response`]))
+      .then(this.postArrayProcessor);
   }
+
+  postArrayProcessor = (obj: Obj) => {
+    objProcessor(obj, {
+      callingPointList: (val) => val.callingPoint,
+      trainServices: (trainServices) => trainServices.service,
+    });
+    return obj;
+  };
+}
+
+function objProcessor(obj: Obj, config: { [keyName: string]: (val: any) => any }) {
+  const configKeys = Object.keys(config);
+  Object.entries(obj).forEach(([key, val]) => {
+    if (configKeys.includes(key)) {
+      obj[key] = config[key](val);
+    }
+    if (isObjectLike(obj[key])) {
+      objProcessor(obj[key], config);
+    }
+  });
+  return obj;
 }

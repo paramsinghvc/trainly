@@ -23,17 +23,18 @@ export type BoardInput = {
   timeWindow?: InputMaybe<Scalars['Int']>;
 };
 
+export type CrsCode = {
+  __typename?: 'CRSCode';
+  code: Scalars['String'];
+  name: Scalars['String'];
+};
+
 export type CallingPoint = {
   __typename?: 'CallingPoint';
   crs?: Maybe<Scalars['String']>;
   et?: Maybe<Scalars['String']>;
   locationName?: Maybe<Scalars['String']>;
   st?: Maybe<Scalars['String']>;
-};
-
-export type CallingPointList = {
-  __typename?: 'CallingPointList';
-  callingPoint?: Maybe<CallingPoint>;
 };
 
 export type DepartureDestination = {
@@ -88,7 +89,7 @@ export type GetStationBoardResult = {
   generatedAt?: Maybe<Scalars['String']>;
   locationName?: Maybe<Scalars['String']>;
   platformAvailable?: Maybe<Scalars['String']>;
-  trainServices?: Maybe<TrainServices>;
+  trainServices?: Maybe<Array<Service>>;
 };
 
 export type Location = {
@@ -104,7 +105,7 @@ export type Origin = {
 
 export type PreviousCallingPoints = {
   __typename?: 'PreviousCallingPoints';
-  callingPointList?: Maybe<CallingPointList>;
+  callingPointList?: Maybe<Array<CallingPoint>>;
 };
 
 export type Query = {
@@ -113,6 +114,7 @@ export type Query = {
   getArrDepBoardWithDetails: GetBoardResponse;
   getArrivalBoard: GetBoardResponse;
   getArrivalDepartureBoard: GetBoardResponse;
+  getCRSCodes: Array<CrsCode>;
   getDepBoardWithDetails: GetBoardResponse;
   getDepartureBoard: GetBoardResponse;
   getFastestDepartures: GetDeparturesBoardResponse;
@@ -201,12 +203,7 @@ export type ServiceInput = {
 
 export type SubsequentCallingPoints = {
   __typename?: 'SubsequentCallingPoints';
-  callingPointList?: Maybe<CallingPointList>;
-};
-
-export type TrainServices = {
-  __typename?: 'TrainServices';
-  service?: Maybe<Array<Service>>;
+  callingPointList?: Maybe<Array<CallingPoint>>;
 };
 
 
@@ -282,8 +279,8 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = {
   BoardInput: BoardInput;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  CRSCode: ResolverTypeWrapper<CrsCode>;
   CallingPoint: ResolverTypeWrapper<CallingPoint>;
-  CallingPointList: ResolverTypeWrapper<CallingPointList>;
   DepartureDestination: ResolverTypeWrapper<DepartureDestination>;
   DepartureInput: DepartureInput;
   Departures: ResolverTypeWrapper<Departures>;
@@ -302,15 +299,14 @@ export type ResolversTypes = {
   ServiceInput: ServiceInput;
   String: ResolverTypeWrapper<Scalars['String']>;
   SubsequentCallingPoints: ResolverTypeWrapper<SubsequentCallingPoints>;
-  TrainServices: ResolverTypeWrapper<TrainServices>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   BoardInput: BoardInput;
   Boolean: Scalars['Boolean'];
+  CRSCode: CrsCode;
   CallingPoint: CallingPoint;
-  CallingPointList: CallingPointList;
   DepartureDestination: DepartureDestination;
   DepartureInput: DepartureInput;
   Departures: Departures;
@@ -329,7 +325,12 @@ export type ResolversParentTypes = {
   ServiceInput: ServiceInput;
   String: Scalars['String'];
   SubsequentCallingPoints: SubsequentCallingPoints;
-  TrainServices: TrainServices;
+};
+
+export type CrsCodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CRSCode'] = ResolversParentTypes['CRSCode']> = {
+  code?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type CallingPointResolvers<ContextType = any, ParentType extends ResolversParentTypes['CallingPoint'] = ResolversParentTypes['CallingPoint']> = {
@@ -337,11 +338,6 @@ export type CallingPointResolvers<ContextType = any, ParentType extends Resolver
   et?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   st?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type CallingPointListResolvers<ContextType = any, ParentType extends ResolversParentTypes['CallingPointList'] = ResolversParentTypes['CallingPointList']> = {
-  callingPoint?: Resolver<Maybe<ResolversTypes['CallingPoint']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -389,7 +385,7 @@ export type GetStationBoardResultResolvers<ContextType = any, ParentType extends
   generatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platformAvailable?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  trainServices?: Resolver<Maybe<ResolversTypes['TrainServices']>, ParentType, ContextType>;
+  trainServices?: Resolver<Maybe<Array<ResolversTypes['Service']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -405,7 +401,7 @@ export type OriginResolvers<ContextType = any, ParentType extends ResolversParen
 };
 
 export type PreviousCallingPointsResolvers<ContextType = any, ParentType extends ResolversParentTypes['PreviousCallingPoints'] = ResolversParentTypes['PreviousCallingPoints']> = {
-  callingPointList?: Resolver<Maybe<ResolversTypes['CallingPointList']>, ParentType, ContextType>;
+  callingPointList?: Resolver<Maybe<Array<ResolversTypes['CallingPoint']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -414,6 +410,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getArrDepBoardWithDetails?: Resolver<ResolversTypes['GetBoardResponse'], ParentType, ContextType, RequireFields<QueryGetArrDepBoardWithDetailsArgs, 'payload'>>;
   getArrivalBoard?: Resolver<ResolversTypes['GetBoardResponse'], ParentType, ContextType, RequireFields<QueryGetArrivalBoardArgs, 'payload'>>;
   getArrivalDepartureBoard?: Resolver<ResolversTypes['GetBoardResponse'], ParentType, ContextType, RequireFields<QueryGetArrivalDepartureBoardArgs, 'payload'>>;
+  getCRSCodes?: Resolver<Array<ResolversTypes['CRSCode']>, ParentType, ContextType>;
   getDepBoardWithDetails?: Resolver<ResolversTypes['GetBoardResponse'], ParentType, ContextType, RequireFields<QueryGetDepBoardWithDetailsArgs, 'payload'>>;
   getDepartureBoard?: Resolver<ResolversTypes['GetBoardResponse'], ParentType, ContextType, RequireFields<QueryGetDepartureBoardArgs, 'payload'>>;
   getFastestDepartures?: Resolver<ResolversTypes['GetDeparturesBoardResponse'], ParentType, ContextType, RequireFields<QueryGetFastestDeparturesArgs, 'payload'>>;
@@ -442,18 +439,13 @@ export type ServiceResolvers<ContextType = any, ParentType extends ResolversPare
 };
 
 export type SubsequentCallingPointsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubsequentCallingPoints'] = ResolversParentTypes['SubsequentCallingPoints']> = {
-  callingPointList?: Resolver<Maybe<ResolversTypes['CallingPointList']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
-export type TrainServicesResolvers<ContextType = any, ParentType extends ResolversParentTypes['TrainServices'] = ResolversParentTypes['TrainServices']> = {
-  service?: Resolver<Maybe<Array<ResolversTypes['Service']>>, ParentType, ContextType>;
+  callingPointList?: Resolver<Maybe<Array<ResolversTypes['CallingPoint']>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
 export type Resolvers<ContextType = any> = {
+  CRSCode?: CrsCodeResolvers<ContextType>;
   CallingPoint?: CallingPointResolvers<ContextType>;
-  CallingPointList?: CallingPointListResolvers<ContextType>;
   DepartureDestination?: DepartureDestinationResolvers<ContextType>;
   Departures?: DeparturesResolvers<ContextType>;
   DeparturesBoard?: DeparturesBoardResolvers<ContextType>;
@@ -468,6 +460,5 @@ export type Resolvers<ContextType = any> = {
   Query?: QueryResolvers<ContextType>;
   Service?: ServiceResolvers<ContextType>;
   SubsequentCallingPoints?: SubsequentCallingPointsResolvers<ContextType>;
-  TrainServices?: TrainServicesResolvers<ContextType>;
 };
 

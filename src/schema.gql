@@ -7,16 +7,12 @@ type CallingPoint {
   et: String
 }
 
-type CallingPointList {
-  callingPoint: CallingPoint
-}
-
 type SubsequentCallingPoints {
-  callingPointList: CallingPointList
+  callingPointList: [CallingPoint!]
 }
 
 type PreviousCallingPoints {
-  callingPointList: CallingPointList
+  callingPointList: [CallingPoint!]
 }
 
 type Location {
@@ -49,16 +45,12 @@ type Service {
   origin: Origin
 }
 
-type TrainServices {
-  service: [Service!]
-}
-
 type GetStationBoardResult {
   generatedAt: String
   locationName: String
   crs: String
   platformAvailable: String
-  trainServices: TrainServices
+  trainServices: [Service!]
 }
 
 type DepartureDestination {
@@ -111,6 +103,11 @@ input ServiceInput {
 	serviceID: String!
 }
 
+type CRSCode {
+	name: String!
+	code: String!
+}
+
 type Query {
 	getDepBoardWithDetails(payload: BoardInput!): GetBoardResponse!
 	getDepartureBoard(payload: BoardInput!): GetBoardResponse!
@@ -123,4 +120,5 @@ type Query {
 	getFastestDepartures(payload: DepartureInput!): GetDeparturesBoardResponse!
 	getFastestDeparturesWithDetails(payload: DepartureInput!): GetDeparturesBoardResponse!
 	getServiceDetails(payload: ServiceInput!): GetServiceDetailsResponse!
+	getCRSCodes: [CRSCode!]!
 }

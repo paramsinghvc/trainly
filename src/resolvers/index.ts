@@ -1,5 +1,6 @@
 import { Resolvers } from '../generated/graphql';
 import { Trains, TrainsService } from '../TrainsService';
+import crsCodes from '../crs';
 
 const trainsService = new TrainsService();
 
@@ -37,6 +38,9 @@ export const resolvers: Resolvers = {
     },
     getServiceDetails(_, { payload }) {
       return trainsService.fetchData(Trains.Operation.GetServiceDetails, payload);
+    },
+    getCRSCodes() {
+      return crsCodes;
     },
   },
 };
