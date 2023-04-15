@@ -1,4 +1,4 @@
-import { Resolvers } from '../generated/graphql';
+import { GetBoardResponse, GetStationBoardResult, GetTrainsResponse, Resolvers } from '../generated/graphql';
 import { Trains, TrainsService } from '../TrainsService';
 import crsCodes from '../crs';
 
@@ -41,6 +41,60 @@ export const resolvers: Resolvers = {
     },
     getCRSCodes() {
       return crsCodes;
+    },
+    async getTrains(_, { payload }) {
+      if (!(payload?.fromCRS || payload?.toCRS)) throw new Error('Provide one of From or To parameters');
+
+      const data = (await trainsService.fetchData(Trains.Operation.GetArrDepBoardWithDetails, {
+        crs: (payload?.fromCRS ?? payload?.toCRS)!,
+        filterCrs: payload?.toCRS,
+        filterType: payload?.toCRS ? 'to' : undefined,
+        numRows: payload?.numRows,
+        timeOffset: payload?.timeOffset,
+        timeWindow: payload?.timeWindow,
+      })) as GetBoardResponse;
+      const response: GetTrainsResponse = {
+        generatedAt: data.GetStationBoardResult?.generatedAt,
+        trainServices: data.GetStationBoardResult?.trainServices?.map((service) => {
+          const fromCRS = payload?.fromCRS ?? service.origin?.location?.crs;
+          const toCRS = payload?.toCRS ?? service.destination?.location?.crs;
+          const fromCallingPoint = service.previousCallingPoints?.callingPointList?.find(
+            (point) => point.crs === fromCRS
+          );
+          const toCallingPoint = service.subsequentCallingPoints?.callingPointList?.find(
+            (point) => point.crs === toCRS
+          );
+
+          service.from = {
+            crs: fromCRS!,
+            eta: payload?.fromCRS ? service.eta : fromCallingPoint?.et,
+            etd: payload?.fromCRS ? service.etd : fromCallingPoint?.et,
+            name: (payload?.fromCRS
+              ? data?.GetStationBoardResult?.locationName
+              : service.origin?.location?.locationName)!,
+            platform: service.platform,
+            sta: payload?.fromCRS ? service.sta : fromCallingPoint?.st,
+            std: payload?.fromCRS ? service.std : fromCallingPoint?.st,
+          };
+
+          const ifOnlyToCRSExist = !payload?.fromCRS && payload?.toCRS;
+          service.to = {
+            crs: toCRS!,
+            eta: ifOnlyToCRSExist ? service.eta : toCallingPoint?.et,
+            etd: ifOnlyToCRSExist ? service.etd : toCallingPoint?.et,
+            name: (ifOnlyToCRSExist
+              ? data?.GetStationBoardResult?.locationName
+              : service.destination?.location?.locationName)!,
+            platform: ifOnlyToCRSExist ? service.platform : undefined,
+            sta: ifOnlyToCRSExist ? service.sta : toCallingPoint?.st,
+            std: ifOnlyToCRSExist ? service.std : toCallingPoint?.st,
+          };
+
+          return service;
+        }),
+      };
+
+      return response;
     },
   },
 };

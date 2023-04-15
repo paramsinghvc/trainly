@@ -92,6 +92,12 @@ export type GetStationBoardResult = {
   trainServices?: Maybe<Array<Service>>;
 };
 
+export type GetTrainsResponse = {
+  __typename?: 'GetTrainsResponse';
+  generatedAt?: Maybe<Scalars['String']>;
+  trainServices?: Maybe<Array<Service>>;
+};
+
 export type Location = {
   __typename?: 'Location';
   crs?: Maybe<Scalars['String']>;
@@ -122,6 +128,7 @@ export type Query = {
   getNextDepartures: GetDeparturesBoardResponse;
   getNextDeparturesWithDetails: GetDeparturesBoardResponse;
   getServiceDetails: GetServiceDetailsResponse;
+  getTrains: GetTrainsResponse;
 };
 
 
@@ -179,11 +186,17 @@ export type QueryGetServiceDetailsArgs = {
   payload: ServiceInput;
 };
 
+
+export type QueryGetTrainsArgs = {
+  payload: TrainsQueryInput;
+};
+
 export type Service = {
   __typename?: 'Service';
   destination?: Maybe<Destination>;
   eta?: Maybe<Scalars['String']>;
   etd?: Maybe<Scalars['String']>;
+  from?: Maybe<Station>;
   operator?: Maybe<Scalars['String']>;
   operatorCode?: Maybe<Scalars['String']>;
   origin?: Maybe<Origin>;
@@ -195,15 +208,35 @@ export type Service = {
   sta?: Maybe<Scalars['String']>;
   std?: Maybe<Scalars['String']>;
   subsequentCallingPoints?: Maybe<SubsequentCallingPoints>;
+  to?: Maybe<Station>;
 };
 
 export type ServiceInput = {
   serviceID: Scalars['String'];
 };
 
+export type Station = {
+  __typename?: 'Station';
+  crs: Scalars['String'];
+  eta?: Maybe<Scalars['String']>;
+  etd?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  platform?: Maybe<Scalars['String']>;
+  sta?: Maybe<Scalars['String']>;
+  std?: Maybe<Scalars['String']>;
+};
+
 export type SubsequentCallingPoints = {
   __typename?: 'SubsequentCallingPoints';
   callingPointList?: Maybe<Array<CallingPoint>>;
+};
+
+export type TrainsQueryInput = {
+  fromCRS?: InputMaybe<Scalars['String']>;
+  numRows?: InputMaybe<Scalars['Int']>;
+  timeOffset?: InputMaybe<Scalars['Int']>;
+  timeWindow?: InputMaybe<Scalars['Int']>;
+  toCRS?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -290,6 +323,7 @@ export type ResolversTypes = {
   GetDeparturesBoardResponse: ResolverTypeWrapper<GetDeparturesBoardResponse>;
   GetServiceDetailsResponse: ResolverTypeWrapper<GetServiceDetailsResponse>;
   GetStationBoardResult: ResolverTypeWrapper<GetStationBoardResult>;
+  GetTrainsResponse: ResolverTypeWrapper<GetTrainsResponse>;
   Int: ResolverTypeWrapper<Scalars['Int']>;
   Location: ResolverTypeWrapper<Location>;
   Origin: ResolverTypeWrapper<Origin>;
@@ -297,8 +331,10 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>;
   Service: ResolverTypeWrapper<Service>;
   ServiceInput: ServiceInput;
+  Station: ResolverTypeWrapper<Station>;
   String: ResolverTypeWrapper<Scalars['String']>;
   SubsequentCallingPoints: ResolverTypeWrapper<SubsequentCallingPoints>;
+  TrainsQueryInput: TrainsQueryInput;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -316,6 +352,7 @@ export type ResolversParentTypes = {
   GetDeparturesBoardResponse: GetDeparturesBoardResponse;
   GetServiceDetailsResponse: GetServiceDetailsResponse;
   GetStationBoardResult: GetStationBoardResult;
+  GetTrainsResponse: GetTrainsResponse;
   Int: Scalars['Int'];
   Location: Location;
   Origin: Origin;
@@ -323,8 +360,10 @@ export type ResolversParentTypes = {
   Query: {};
   Service: Service;
   ServiceInput: ServiceInput;
+  Station: Station;
   String: Scalars['String'];
   SubsequentCallingPoints: SubsequentCallingPoints;
+  TrainsQueryInput: TrainsQueryInput;
 };
 
 export type CrsCodeResolvers<ContextType = any, ParentType extends ResolversParentTypes['CRSCode'] = ResolversParentTypes['CRSCode']> = {
@@ -389,6 +428,12 @@ export type GetStationBoardResultResolvers<ContextType = any, ParentType extends
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type GetTrainsResponseResolvers<ContextType = any, ParentType extends ResolversParentTypes['GetTrainsResponse'] = ResolversParentTypes['GetTrainsResponse']> = {
+  generatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  trainServices?: Resolver<Maybe<Array<ResolversTypes['Service']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type LocationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Location'] = ResolversParentTypes['Location']> = {
   crs?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   locationName?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -418,12 +463,14 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   getNextDepartures?: Resolver<ResolversTypes['GetDeparturesBoardResponse'], ParentType, ContextType, RequireFields<QueryGetNextDeparturesArgs, 'payload'>>;
   getNextDeparturesWithDetails?: Resolver<ResolversTypes['GetDeparturesBoardResponse'], ParentType, ContextType, RequireFields<QueryGetNextDeparturesWithDetailsArgs, 'payload'>>;
   getServiceDetails?: Resolver<ResolversTypes['GetServiceDetailsResponse'], ParentType, ContextType, RequireFields<QueryGetServiceDetailsArgs, 'payload'>>;
+  getTrains?: Resolver<ResolversTypes['GetTrainsResponse'], ParentType, ContextType, RequireFields<QueryGetTrainsArgs, 'payload'>>;
 };
 
 export type ServiceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Service'] = ResolversParentTypes['Service']> = {
   destination?: Resolver<Maybe<ResolversTypes['Destination']>, ParentType, ContextType>;
   eta?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   etd?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  from?: Resolver<Maybe<ResolversTypes['Station']>, ParentType, ContextType>;
   operator?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   operatorCode?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   origin?: Resolver<Maybe<ResolversTypes['Origin']>, ParentType, ContextType>;
@@ -435,6 +482,18 @@ export type ServiceResolvers<ContextType = any, ParentType extends ResolversPare
   sta?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   std?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subsequentCallingPoints?: Resolver<Maybe<ResolversTypes['SubsequentCallingPoints']>, ParentType, ContextType>;
+  to?: Resolver<Maybe<ResolversTypes['Station']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type StationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Station'] = ResolversParentTypes['Station']> = {
+  crs?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  eta?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  etd?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  platform?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  sta?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  std?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -454,11 +513,13 @@ export type Resolvers<ContextType = any> = {
   GetDeparturesBoardResponse?: GetDeparturesBoardResponseResolvers<ContextType>;
   GetServiceDetailsResponse?: GetServiceDetailsResponseResolvers<ContextType>;
   GetStationBoardResult?: GetStationBoardResultResolvers<ContextType>;
+  GetTrainsResponse?: GetTrainsResponseResolvers<ContextType>;
   Location?: LocationResolvers<ContextType>;
   Origin?: OriginResolvers<ContextType>;
   PreviousCallingPoints?: PreviousCallingPointsResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Service?: ServiceResolvers<ContextType>;
+  Station?: StationResolvers<ContextType>;
   SubsequentCallingPoints?: SubsequentCallingPointsResolvers<ContextType>;
 };
 

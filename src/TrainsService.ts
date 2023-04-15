@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { parseString, convertableToString, ParserOptions, Builder } from 'xml2js';
 import { promisify } from 'util';
-import { get, isObjectLike } from 'lodash';
+import { get, isArray, isObjectLike } from 'lodash';
 
 type Obj = { [k: string]: any };
 
@@ -19,7 +19,6 @@ const BASE_URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb11.asmx'
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
-console.log({ ACCESS_TOKEN });
 export namespace Trains {
   export enum Operation {
     GetDepartureBoard = 'GetDepartureBoard',
@@ -65,7 +64,7 @@ export class TrainsService {
   constructXMLFromObject(obj: { [k: string]: any }) {
     return Object.entries(obj).reduce((acc, [key, value]) => {
       const val = key === 'filterList' ? value.reduce((acc: string, v: string) => acc + `<crs>${v}</crs>`, '') : value;
-      return acc + `<${key}>${val}</${key}>`;
+      return acc + (typeof val !== 'undefined' ? `<${key}>${val}</${key}>` : ''); //
     }, '');
   }
 
@@ -87,6 +86,7 @@ export class TrainsService {
   }
 
   async fetchData(operationName: Trains.Operation, payload: Trains.Payload) {
+    debugger;
     const xmlPayload = this.constructXMLBody(operationName, payload);
     const result = await axios({
       method: 'POST',
@@ -98,7 +98,6 @@ export class TrainsService {
     });
 
     const data = await this.parseResponse(result.data, operationName);
-
     return data;
   }
 
@@ -115,12 +114,14 @@ export class TrainsService {
 
   postArrayProcessor = (obj: Obj) => {
     objProcessor(obj, {
-      callingPointList: (val) => val.callingPoint,
-      trainServices: (trainServices) => trainServices.service,
+      callingPointList: (val: any) => getArrayValue(val?.callingPoint),
+      trainServices: (trainServices) => getArrayValue(trainServices?.service),
     });
     return obj;
   };
 }
+
+const getArrayValue = (val: any) => (val ? (isArray(val) ? val : [val]) : null);
 
 function objProcessor(obj: Obj, config: { [keyName: string]: (val: any) => any }) {
   const configKeys = Object.keys(config);
