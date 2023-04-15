@@ -15,7 +15,7 @@ const toCamelCase = (str: string): string => str.charAt(0).toLocaleLowerCase() +
 
 const xml2JSON = promisify(parseString as ParseString);
 
-const BASE_URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb11.asmx';
+export const BASE_URL = 'https://lite.realtime.nationalrail.co.uk/OpenLDBWS/ldb11.asmx';
 
 const ACCESS_TOKEN = process.env.ACCESS_TOKEN;
 
@@ -86,8 +86,8 @@ export class TrainsService {
   }
 
   async fetchData(operationName: Trains.Operation, payload: Trains.Payload) {
-    debugger;
     const xmlPayload = this.constructXMLBody(operationName, payload);
+    console.log(xmlPayload);
     const result = await axios({
       method: 'POST',
       url: BASE_URL,
