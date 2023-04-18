@@ -7,8 +7,8 @@
 	"scripts": {
 		"debug": "nodemon --exec 'node --inspect=0.0.0.0:9229 --require ts-node/register src/index.ts'",
 		"dev": "nodemon src/index.ts",
-		"prod": "node dist/app.js",
-		"build": "tsc",
+		"prod": "node dist/index.js",
+		"build": "tsc && cp ./src/schema.gql dist",
 		"start": "yarn build && yarn prod",
 		"codegen": "graphql-codegen --config codegen.ts",
 		"test": "jest"
