@@ -10,7 +10,7 @@ dotenv.config();
 
 import { resolvers } from './resolvers';
 
-const app: Application = express();
+export const app: Application = express();
 const port: number = 3001;
 
 const server = new ApolloServer<any>({
