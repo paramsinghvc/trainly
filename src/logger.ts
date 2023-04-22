@@ -47,6 +47,7 @@ export const logger = createLogger({
       basicAuth: process.env.LOKI,
       labels: { job: 'Trainly' },
       level: 'debug',
+      batching: false,
       handleExceptions: true,
       handleRejections: true,
     }),
