@@ -14,7 +14,7 @@ const levels = {
 const level = () => {
   const env = process.env.NODE_ENV || 'development';
   const isDevelopment = env === 'development';
-  return isDevelopment ? 'debug' : 'warn';
+  return isDevelopment ? 'debug' : 'info';
 };
 
 const colors = {
@@ -46,6 +46,9 @@ export const logger = createLogger({
       host: 'https://logs-prod-006.grafana.net',
       basicAuth: process.env.LOKI,
       labels: { job: 'Trainly' },
+      level: 'debug',
+      handleExceptions: true,
+      handleRejections: true,
     }),
     // new transports.File({
     //   level: 'debug',
