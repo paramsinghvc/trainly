@@ -1,7 +1,8 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { parseString, convertableToString, ParserOptions, Builder } from 'xml2js';
 import { promisify } from 'util';
 import { get, isArray, isObjectLike } from 'lodash';
+import { logger } from './logger';
 
 type Obj = { [k: string]: any };
 
@@ -86,19 +87,31 @@ export class TrainsService {
   }
 
   async fetchData(operationName: Trains.Operation, payload: Trains.Payload) {
+    logger.info(`Fetching ${operationName} - [payload: ${JSON.stringify(payload)}]`);
     const xmlPayload = this.constructXMLBody(operationName, payload);
-    console.log(xmlPayload);
-    const result = await axios({
-      method: 'POST',
-      url: BASE_URL,
-      headers: {
-        'Content-Type': 'text/xml',
-      },
-      data: xmlPayload,
-    });
-
-    const data = await this.parseResponse(result.data, operationName);
-    return data;
+    try {
+      const result = await axios({
+        method: 'POST',
+        url: BASE_URL,
+        headers: {
+          'Content-Type': 'text/xml',
+        },
+        data: xmlPayload,
+      });
+      const data = await this.parseResponse(result.data, operationName);
+      return data;
+    } catch (e: unknown) {
+      if (e instanceof AxiosError) {
+        logger.error(
+          `🚨Failed: Fetching ${operationName} - [${e.response?.status} - ${e.code}] - [${
+            e.message
+          }] - [payload: ${JSON.stringify(payload)}] - [response: ${JSON.stringify(e.response?.data)}]`
+        );
+      } else {
+        logger.error(`🚨Failed: Parsing XML for ${operationName} - [${e}]`);
+      }
+      throw e;
+    }
   }
 
   async parseResponse(result: string, operationName: Trains.Operation): Promise<Obj> {

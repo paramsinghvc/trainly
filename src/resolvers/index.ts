@@ -1,6 +1,7 @@
 import { GetBoardResponse, GetStationBoardResult, GetTrainsResponse, Resolvers } from '../generated/graphql';
 import { Trains, TrainsService } from '../TrainsService';
 import crsCodes from '../crs';
+import { cache, checkKeyIfNotSetIt } from '../cache';
 
 const trainsService = new TrainsService();
 
@@ -40,10 +41,13 @@ export const resolvers: Resolvers = {
       return trainsService.fetchData(Trains.Operation.GetServiceDetails, payload);
     },
     getCRSCodes() {
-      return crsCodes;
+      return checkKeyIfNotSetIt('CRSCodes', crsCodes)!;
     },
     async getTrains(_, { payload }) {
       if (!(payload?.fromCRS || payload?.toCRS)) throw new Error('Provide one of From or To parameters');
+      const CACHE_KEY = `${payload?.fromCRS} - ${payload?.toCRS}`;
+      if (cache.has(CACHE_KEY)) return cache.get(CACHE_KEY)!;
+
       const doBothExist = payload?.fromCRS && payload?.toCRS;
       const data = (await trainsService.fetchData(Trains.Operation.GetArrDepBoardWithDetails, {
         crs: (payload?.fromCRS ?? payload?.toCRS)!,
@@ -53,7 +57,6 @@ export const resolvers: Resolvers = {
         timeOffset: payload?.timeOffset,
         timeWindow: payload?.timeWindow,
       })) as GetBoardResponse;
-      console.log(data.GetStationBoardResult?.locationName);
       const response: GetTrainsResponse = {
         generatedAt: data.GetStationBoardResult?.generatedAt,
         trainServices: data.GetStationBoardResult?.trainServices
@@ -106,6 +109,7 @@ export const resolvers: Resolvers = {
           }),
       };
 
+      cache.set(CACHE_KEY, response, 60);
       return response;
     },
   },
