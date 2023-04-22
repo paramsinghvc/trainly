@@ -47,13 +47,13 @@ export const logger = createLogger({
       basicAuth: process.env.LOKI,
       labels: { job: 'Trainly' },
     }),
-    new transports.File({
-      level: 'debug',
-      filename: './logs/all-logs.log',
-      handleExceptions: true,
-      maxsize: 5242880, //5MB
-      maxFiles: 5,
-    }),
+    // new transports.File({
+    //   level: 'debug',
+    //   filename: './logs/all-logs.log',
+    //   handleExceptions: true,
+    //   maxsize: 5242880, //5MB
+    //   maxFiles: 5,
+    // }),
     new transports.Console({
       level: 'debug',
       handleExceptions: true,

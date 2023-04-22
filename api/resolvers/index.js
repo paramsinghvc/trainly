@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolvers = void 0;
 const TrainsService_1 = require("../TrainsService");
 const crs_1 = __importDefault(require("../crs"));
+const cache_1 = require("../cache");
 const trainsService = new TrainsService_1.TrainsService();
 exports.resolvers = {
     Query: {
@@ -52,13 +53,16 @@ exports.resolvers = {
             return trainsService.fetchData(TrainsService_1.Trains.Operation.GetServiceDetails, payload);
         },
         getCRSCodes() {
-            return crs_1.default;
+            return (0, cache_1.checkKeyIfNotSetIt)('CRSCodes', crs_1.default);
         },
         getTrains(_, { payload }) {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e;
             return __awaiter(this, void 0, void 0, function* () {
                 if (!((payload === null || payload === void 0 ? void 0 : payload.fromCRS) || (payload === null || payload === void 0 ? void 0 : payload.toCRS)))
                     throw new Error('Provide one of From or To parameters');
+                const CACHE_KEY = `${payload === null || payload === void 0 ? void 0 : payload.fromCRS} - ${payload === null || payload === void 0 ? void 0 : payload.toCRS}`;
+                if (cache_1.cache.has(CACHE_KEY))
+                    return cache_1.cache.get(CACHE_KEY);
                 const doBothExist = (payload === null || payload === void 0 ? void 0 : payload.fromCRS) && (payload === null || payload === void 0 ? void 0 : payload.toCRS);
                 const data = (yield trainsService.fetchData(TrainsService_1.Trains.Operation.GetArrDepBoardWithDetails, {
                     crs: ((_a = payload === null || payload === void 0 ? void 0 : payload.fromCRS) !== null && _a !== void 0 ? _a : payload === null || payload === void 0 ? void 0 : payload.toCRS),
@@ -68,10 +72,9 @@ exports.resolvers = {
                     timeOffset: payload === null || payload === void 0 ? void 0 : payload.timeOffset,
                     timeWindow: payload === null || payload === void 0 ? void 0 : payload.timeWindow,
                 }));
-                console.log((_b = data.GetStationBoardResult) === null || _b === void 0 ? void 0 : _b.locationName);
                 const response = {
-                    generatedAt: (_c = data.GetStationBoardResult) === null || _c === void 0 ? void 0 : _c.generatedAt,
-                    trainServices: (_f = (_e = (_d = data.GetStationBoardResult) === null || _d === void 0 ? void 0 : _d.trainServices) === null || _e === void 0 ? void 0 : _e.filter((service) => {
+                    generatedAt: (_b = data.GetStationBoardResult) === null || _b === void 0 ? void 0 : _b.generatedAt,
+                    trainServices: (_e = (_d = (_c = data.GetStationBoardResult) === null || _c === void 0 ? void 0 : _c.trainServices) === null || _d === void 0 ? void 0 : _d.filter((service) => {
                         var _a, _b, _c, _d;
                         const isFromOnly = (payload === null || payload === void 0 ? void 0 : payload.fromCRS) && !(payload === null || payload === void 0 ? void 0 : payload.toCRS);
                         const isToOnly = (payload === null || payload === void 0 ? void 0 : payload.toCRS) && !(payload === null || payload === void 0 ? void 0 : payload.fromCRS);
@@ -79,7 +82,7 @@ exports.resolvers = {
                         return ((isFromOnly && (payload === null || payload === void 0 ? void 0 : payload.fromCRS) !== ((_b = (_a = service.destination) === null || _a === void 0 ? void 0 : _a.location) === null || _b === void 0 ? void 0 : _b.crs)) ||
                             (isToOnly && (payload === null || payload === void 0 ? void 0 : payload.toCRS) !== ((_d = (_c = service.origin) === null || _c === void 0 ? void 0 : _c.location) === null || _d === void 0 ? void 0 : _d.crs)) ||
                             bothExist);
-                    })) === null || _f === void 0 ? void 0 : _f.map((service) => {
+                    })) === null || _e === void 0 ? void 0 : _e.map((service) => {
                         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r;
                         const fromCRS = (_a = payload === null || payload === void 0 ? void 0 : payload.fromCRS) !== null && _a !== void 0 ? _a : (_c = (_b = service.origin) === null || _b === void 0 ? void 0 : _b.location) === null || _c === void 0 ? void 0 : _c.crs;
                         const toCRS = (_d = payload === null || payload === void 0 ? void 0 : payload.toCRS) !== null && _d !== void 0 ? _d : (_f = (_e = service.destination) === null || _e === void 0 ? void 0 : _e.location) === null || _f === void 0 ? void 0 : _f.crs;
@@ -111,6 +114,7 @@ exports.resolvers = {
                         return service;
                     }),
                 };
+                cache_1.cache.set(CACHE_KEY, response, 60);
                 return response;
             });
         },
