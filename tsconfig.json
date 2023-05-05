@@ -1,13 +1,16 @@
 {
   "compilerOptions": {
-    "target": "es2016",
 		"module": "commonjs",
 		"strict": true,
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"skipLibCheck": true,
 		"forceConsistentCasingInFileNames": true,
-		"outDir": "./api",
+		"target": "es6",
+		"moduleResolution": "node",
+		"sourceMap": true,
+		"baseUrl": ".",
+		"outDir": "dist",
 		"noImplicitAny": false
   },
 	"files": [

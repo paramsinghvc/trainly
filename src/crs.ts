@@ -392,10 +392,6 @@ export default [
     code: 'AFK',
   },
   {
-    name: 'Ashford International (Eurostar)',
-    code: 'ASI',
-  },
-  {
     name: 'Ashley',
     code: 'ASY',
   },
@@ -5830,10 +5826,6 @@ export default [
   {
     name: 'London Road (Guildford)',
     code: 'LRD',
-  },
-  {
-    name: 'London St Pancras (Intl)',
-    code: 'SPX',
   },
   {
     name: 'London St Pancras International',
